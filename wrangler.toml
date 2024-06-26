@@ -1,0 +1,4 @@
+name = "congzhou-odoo"
+main = "src/index.js"
+compatibility_date = "2024-05-25"
+workers_dev = true
