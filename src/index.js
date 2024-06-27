@@ -24,8 +24,7 @@ async function handleRequest(request) {
         <param><value><string>${password}</string></value></param>
         <param><value><struct></struct></value></param>
       </params>
-    </methodCall>
-  `;
+    </methodCall>`;
 
 	const authResponse = await fetch(`${odooUrl}/xmlrpc/2/common`, {
 		method: 'POST',
@@ -46,49 +45,37 @@ async function handleRequest(request) {
 	const uid = uidMatch[1];
 
 	// XML-RPC payload to create product
-	const createProductPayload = `
-    <methodCall>
-      <methodName>execute_kw</methodName>
-      <params>
-        <param><value><string>${dbName}</string></value></param>
-        <param><value><int>${uid}</int></value></param>
-        <param><value><string>${password}</string></value></param>
-        <param><value><string>product.template</string></value></param>
-        <param><value><string>create</string></value></param>
-        <param>
-          <value>
-            <array>
-              <data>
-                <value>
-                  <struct>
-                    <member><name>name</name><value><string>${productData.product_name}</string></value></member>
-                    <member><name>default_code</name><value><string>${productData.internal_reference}</string></value></member>
-                    <member><name>type</name><value><string>${productData.product_type}</string></value></member>
-                    <member><name>categ_id</name><value><string>${productData.product_category}</string></value></member>
-                    <member><name>list_price</name><value><double>${parseFloat(productData.sales_price)}</double></value></member>
-                    <member><name>standard_price</name><value><double>${parseFloat(productData.cost)}</double></value></member>
-                    <member><name>barcode</name><value><string>${productData.barcode}</string></value></member>
-                    <member><name>company_id</name><value><string>${productData.company}</string></value></member>
-                    <member><name>sale_ok</name><value><boolean>${productData.sales === 'Yes'}</boolean></value></member>
-                    <member><name>invoice_policy</name><value><string>${productData.invoicing_policy}</string></value></member>
-                    <member><name>description_sale</name><value><string>${productData.sales_description}</string></value></member>
-                    <member><name>purchase_ok</name><value><boolean>${productData.purchases === 'Yes'}</boolean></value></member>
-                    <member><name>description_purchase</name><value><string>${productData.purchase_description}</string></value></member>
-                    <member><name>seller_ids</name><value><string>${productData.vendor}</string></value></member>
-                    <member><name>route_ids</name><value><string>${productData.route}</string></value></member>
-                    <member><name>weight</name><value><double>${parseFloat(productData.weight)}</double></value></member>
-                    <member><name>volume</name><value><double>${parseFloat(productData.volume)}</double></value></member>
-                    <member><name>taxes_id</name><value><string>${productData.sales_gst}</string></value></member>
-                    <member><name>supplier_taxes_id</name><value><string>${productData.purchase_gst}</string></value></member>
-                  </struct>
-                </value>
-              </data>
-            </array>
-          </value>
-        </param>
-      </params>
-    </methodCall>
-  `;
+	const createProductPayload = `<methodCall>
+  <methodName>execute_kw</methodName>
+  <params>
+    <param><value><string>${dbName}</string></value></param>
+    <param><value><int>${uid}</int></value></param>
+    <param><value><string>${password}</string></value></param>
+    <param><value><string>product.template</string></value></param>
+    <param><value><string>create</string></value></param>
+    <param>
+      <value>
+        <array>
+          <data>
+            <value>
+              <struct>
+                <member><name>name</name><value><string>${productData.product_name}</string></value></member>
+                <member><name>default_code</name><value><string>${productData.internal_reference}</string></value></member>
+                <member><name>detailed_type</name><value><string>${productData.product_type}</string></value></member>
+                <member><name>categ_id</name><value><int>${productData.product_category}</int></value></member>
+                <member><name>list_price</name><value><double>${parseFloat(productData.sales_price)}</double></value></member>
+                <member><name>standard_price</name><value><double>${parseFloat(productData.cost)}</double></value></member>
+                <member><name>barcode</name><value><string>${productData.barcode}</string></value></member>
+                <member><name>invoice_policy</name><value><string>${productData.invoicing_policy}</string></value></member>
+                <member><name>description_sale</name><value><string>${productData.sales_description}</string></value></member>
+              </struct>
+            </value>
+          </data>
+        </array>
+      </value>
+    </param>
+  </params>
+</methodCall>`;
 
 	const createProductResponse = await fetch(`${odooUrl}/xmlrpc/2/object`, {
 		method: 'POST',
