@@ -1,7 +1,3 @@
-addEventListener('fetch', (event) => {
-	event.respondWith(handleRequest(event.request));
-});
-
 async function handleRequest(request) {
 	if (request.method !== 'POST') {
 		return new Response('Send a POST request', { status: 405 });
@@ -44,6 +40,40 @@ async function handleRequest(request) {
 
 	const uid = uidMatch[1];
 
+	// Fetch IDs for sales tax, purchase tax, and product category
+	const salesTaxId = await new Promise((resolve, reject) => {
+		getTaxIdByName(productData.sales_tax_name, (err, result) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(result);
+			}
+		});
+	});
+
+	const purchaseTaxId = await new Promise((resolve, reject) => {
+		getTaxIdByName(productData.purchase_tax_name, (err, result) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(result);
+			}
+		});
+	});
+
+	const productCategoryId = await new Promise((resolve, reject) => {
+		getProductCategoryIdByName(productData.product_category_name, (err, result) => {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(result);
+			}
+		});
+	});
+
+	// Get current timestamp for internal notes
+	const timestamp = new Date().toISOString();
+
 	// XML-RPC payload to create product
 	const createProductPayload = `<methodCall>
   <methodName>execute_kw</methodName>
@@ -62,12 +92,16 @@ async function handleRequest(request) {
                 <member><name>name</name><value><string>${productData.product_name}</string></value></member>
                 <member><name>default_code</name><value><string>${productData.internal_reference}</string></value></member>
                 <member><name>detailed_type</name><value><string>${productData.product_type}</string></value></member>
-                <member><name>categ_id</name><value><int>${productData.product_category}</int></value></member>
+                <member><name>categ_id</name><value><int>${productCategoryId}</int></value></member>
                 <member><name>list_price</name><value><double>${parseFloat(productData.sales_price)}</double></value></member>
                 <member><name>standard_price</name><value><double>${parseFloat(productData.cost)}</double></value></member>
                 <member><name>barcode</name><value><string>${productData.barcode}</string></value></member>
                 <member><name>invoice_policy</name><value><string>${productData.invoicing_policy}</string></value></member>
                 <member><name>description_sale</name><value><string>${productData.sales_description}</string></value></member>
+                <member><name>taxes_id</name><value><array><data><value><int>${salesTaxId}</int></value></data></array></value></member>
+                <member><name>supplier_taxes_id</name><value><array><data><value><int>${purchaseTaxId}</int></value></data></array></value></member>
+                <member><name>l10n_in_hsn_code</name><value><string>${productData.hsn_code}</string></value></member>
+                <member><name>description</name><value><string>Product Upload through Google Sheet ${timestamp}</string></value></member>
               </struct>
             </value>
           </data>
